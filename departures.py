@@ -12,11 +12,14 @@ from collections import defaultdict
 import tkinter as tk
 from tkinter import ttk
 import os
+import getpass
 
 # Change working directory to the one that the file is residing in
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
+
+onPi = getpass.getuser() == "pi"  # To determine whether we are on the raspberry pi
 
 apiKey = None
 apiSecret = None
@@ -31,6 +34,9 @@ destinations= {"16": "Marklandsgatan", "99": "Hj. Bratningsplatsen", "45": "Back
                "55": "Johanneberg", "16X": "Centralstationen", "121": "Partille"}
 sideColumnMinSize = 100
 departureFontSize = 40
+destinationFontSize = int(departureFontSize/2) if onPi else departureFontSize
+headerFontSize = 25
+subHeaderFontSize = 20
 refreshRate = 15  # How often to check the Vasttrafik API for new departures (in seconds)
 
 
@@ -45,9 +51,9 @@ def getNTPTime(host = "pool.ntp.org"):
     TIME1970 = 2208988800 # 1970-01-01 00:00:00
 
     # connect to server
-    client = socket.socket( AF_INET, SOCK_DGRAM)
+    client = socket.socket(AF_INET, SOCK_DGRAM)
     client.sendto(bytes(msg, "UTF-8"), address)
-    msg, address = client.recvfrom( buf )
+    msg, address = client.recvfrom(buf)
 
     t = struct.unpack( "!12I", msg )[10]
     t -= TIME1970
@@ -127,7 +133,7 @@ class GUI:
         headerFrame.grid(row=0, sticky=tk.E+tk.W)
 
         # Label inside heade frame
-        headerLbl = tk.Label(headerFrame, text="Departures", font=("Helvetica bold", 25), bg="black", fg="white")
+        headerLbl = tk.Label(headerFrame, text="Departures", font=("Helvetica bold", headerFontSize), bg="black", fg="white")
         # Place label on grid layout, row 0 and do not expand
         headerLbl.grid(row=0)
         # Center column 0 inside header frame
@@ -137,9 +143,9 @@ class GUI:
         subHeadersFrame.configure(background='black')
         subHeadersFrame.grid(row=1, sticky=tk.E+tk.W)
 
-        busNoLbl = tk.Label(subHeadersFrame, text="Bus Number", font=("Helvetica", 20), bg="black", fg="white")
-        busDestLbl = tk.Label(subHeadersFrame, text="Destination", font=("Helvetica", 20), bg="black", fg="white")
-        minsLeftLbl = tk.Label(subHeadersFrame, text="Minutes Left", font=("Helvetica", 20), bg="black", fg="white")
+        busNoLbl = tk.Label(subHeadersFrame, text="Bus Number", font=("Helvetica", subHeaderFontSize), bg="black", fg="white")
+        busDestLbl = tk.Label(subHeadersFrame, text="Destination", font=("Helvetica", subHeaderFontSize), bg="black", fg="white")
+        minsLeftLbl = tk.Label(subHeadersFrame, text="Minutes Left", font=("Helvetica", subHeaderFontSize), bg="black", fg="white")
 
         busNoLbl.grid(row=0, column=0)
         busDestLbl.grid(row=0, column=1)
@@ -157,7 +163,7 @@ class GUI:
         master.grid_columnconfigure(0, weight=1)
 
         w, h = master.winfo_screenwidth(), master.winfo_screenheight()
-        master.overrideredirect(0)  # Set to 1 to force full window mode
+        master.overrideredirect(onPi)  # Set to 1 to force full window mode
         master.geometry("%dx%d+0+0" % (w, h))
 
     # Receives a list of tuples (busline, minutesToLeave) as the argument and displays them
@@ -166,7 +172,7 @@ class GUI:
         for departure in departures:
             (bus, minutes) = departure
             # Change background color for each row
-            bgColor = "white" if currentRow % 2 else "gray"
+            bgColor = "gray" if currentRow % 2 else "white"
 
             # The frame that will contain each departure
             rowFrame = tk.Frame(self.departuresFrame)
@@ -176,7 +182,7 @@ class GUI:
 
             # After we have created the frame that will hold each departure, create the labels
             busNo = tk.Label(rowFrame, text=bus, font=("Helvetica", departureFontSize), bg=bgColor)
-            busDest = tk.Label(rowFrame, text=destinations.get(bus, bus), font=("Helvetica", departureFontSize), bg=bgColor)
+            busDest = tk.Label(rowFrame, text=destinations.get(bus, bus), font=("Helvetica", destinationFontSize), bg=bgColor)
             minsLeft = tk.Label(rowFrame, text=int(minutes) if int(minutes) != 0 else "Now", font=("Helvetica", departureFontSize), bg=bgColor)
             busNo.grid(row=0, column=0)
             busDest.grid(row=0, column=1)
@@ -194,7 +200,6 @@ class GUI:
 
     # Destroy any existing frames containing departures that already exist
     def resetDepartures(self):
-        print ("Reseting")
         for frame in self.departureRowFrames:
             frame.destroy()
         # Empty the list as we have destroyed everything that was included in it
