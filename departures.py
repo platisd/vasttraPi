@@ -11,6 +11,12 @@ from datetime import datetime
 from collections import defaultdict
 import tkinter as tk
 from tkinter import ttk
+import os
+
+# Change working directory to the one that the file is residing in
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
 
 apiKey = None
 apiSecret = None
@@ -144,6 +150,26 @@ class GUI:
         subHeadersFrame.grid_columnconfigure(1, weight=1)
         subHeadersFrame.grid_columnconfigure(2, weight=1)
 
+        # The frame that will contain the departures
+        departuresFrame = tk.Frame(master)
+        departuresFrame.configure(background='white')
+        departuresFrame.grid(row=2, sticky=tk.E+tk.W)
+
+        busNo = tk.Label(departuresFrame, text="16", font=("Helvetica", 20), bg="black", fg="red")
+        busNo.grid(row=0, column=0)
+        busDest = tk.Label(departuresFrame, text="Marklandsgatan", font=("Helvetica", 20), bg="black", fg="red")
+        busDest.grid(row=0, column=1)
+        minsLeft = tk.Label(departuresFrame, text="16", font=("Helvetica", 20), bg="black", fg="red")
+        minsLeft.grid(row=0, column=2)
+
+        departuresFrame.grid_columnconfigure(1, weight=1)
+
+
+
+        # Center column 0 inside header frame
+        subHeadersFrame.grid_columnconfigure(0, weight=1)
+        subHeadersFrame.grid_columnconfigure(1, weight=1)
+        subHeadersFrame.grid_columnconfigure(2, weight=1)
 
         # Keep everything in column 0 of master centered/expanded
         master.grid_columnconfigure(0, weight=1)
