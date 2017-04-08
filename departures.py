@@ -31,7 +31,7 @@ destinations= {"16": "Marklandsgatan", "99": "Hj. Bratningsplatsen", "45": "Back
                "55": "Johanneberg", "16X": "Centralstationen", "121": "Partille"}
 sideColumnMinSize = 100
 departureFontSize = 40
-refreshRate = 29
+refreshRate = 15  # How often to check the Vasttrafik API for new departures (in seconds)
 
 
 # Fetches the time from NTP server. Source: http://blog.mattcrampton.com/post/88291892461/query-an-ntp-server-from-python
@@ -116,6 +116,8 @@ class GUI:
         self.master = master
         master.grid()
         master.title("Departures")
+        # A list that will hold the temporary departure frames so to destroy them upon refreshing
+        self.departureRowFrames = []
 
         # A new frame inside master with boarder
         headerFrame = tk.Frame(master, bd="0")
@@ -149,7 +151,7 @@ class GUI:
         departuresFrame = tk.Frame(master)
         departuresFrame.grid(row=2, sticky=tk.E+tk.W)
         departuresFrame.grid_columnconfigure(1, weight=1)
-        self.departuresFrame = departuresFrame
+        self.departuresFrame = departuresFrame  # Class variable to hold the container frame for all the departures
 
         # Keep everything in column 0 of master centered/expanded
         master.grid_columnconfigure(0, weight=1)
@@ -186,17 +188,25 @@ class GUI:
             rowFrame.grid_columnconfigure(0, minsize=sideColumnMinSize)
             rowFrame.grid_columnconfigure(2, minsize=sideColumnMinSize)
 
-    def toggle_geom(self,event):
-        geom=self.master.winfo_geometry()
-        print(geom,self._geom)
-        self.master.geometry(self._geom)
-        self._geom=geom
+            # Add the newly created frame to a list so we can destroy it later when we refresh the departures
+            self.departureRowFrames.append(rowFrame)
+
+
+    # Destroy any existing frames containing departures that already exist
+    def resetDepartures(self):
+        print ("Reseting")
+        for frame in self.departureRowFrames:
+            frame.destroy()
+        # Empty the list as we have destroyed everything that was included in it
+        self.departureRowFrames = []
+
 
 def updateGui(gui):
     # Get the next trips from Vasttrafik's public API for the station we are interested in
     nextTrips = getNextTrips() # contains a list of tuples (bus, minutesToDepart)
     # Sort the trips based on departure time (i.e. the second element in the tuples)
     nextTrips.sort(key=lambda trips: trips[1])
+    gui.resetDepartures()  # Remove any already existing departures
     gui.populateTable(nextTrips)
     if mainThread.is_alive():
         threading.Timer(refreshRate, updateGui, [gui]).start()
