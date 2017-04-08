@@ -27,6 +27,11 @@ mainThread = threading.current_thread()
 LINDHOLMEN_ID = "9021014004490000"
 TEKNIKGATAN_ID = "9021014006675000"
 stations = {"Lindholmen": LINDHOLMEN_ID, "Teknikgatan": TEKNIKGATAN_ID}
+destinations= {"16": "Marklandsgatan", "99": "Hj. Bratningsplatsen", "45": "Backebol",
+               "55": "Johanneberg", "16X": "Centralstationen", "121": "Partille"}
+sideColumnMinSize = 100
+departureFontSize = 40
+refreshRate = 29
 
 
 # Fetches the time from NTP server. Source: http://blog.mattcrampton.com/post/88291892461/query-an-ntp-server-from-python
@@ -150,7 +155,7 @@ class GUI:
         master.grid_columnconfigure(0, weight=1)
 
         w, h = master.winfo_screenwidth(), master.winfo_screenheight()
-        master.overrideredirect(0)
+        master.overrideredirect(0)  # Set to 1 to force full window mode
         master.geometry("%dx%d+0+0" % (w, h))
 
     # Receives a list of tuples (busline, minutesToLeave) as the argument and displays them
@@ -168,16 +173,18 @@ class GUI:
             currentRow += 1
 
             # After we have created the frame that will hold each departure, create the labels
-            busNo = tk.Label(rowFrame, text=bus, font=("Helvetica", 20), bg=bgColor)
-            busDest = tk.Label(rowFrame, text="Marklandsgatan", font=("Helvetica", 20), bg=bgColor)
-            minsLeft = tk.Label(rowFrame, text=int(minutes) if int(minutes) != 0 else "Now", font=("Helvetica", 16), bg=bgColor)
+            busNo = tk.Label(rowFrame, text=bus, font=("Helvetica", departureFontSize), bg=bgColor)
+            busDest = tk.Label(rowFrame, text=destinations.get(bus, bus), font=("Helvetica", departureFontSize), bg=bgColor)
+            minsLeft = tk.Label(rowFrame, text=int(minutes) if int(minutes) != 0 else "Now", font=("Helvetica", departureFontSize), bg=bgColor)
             busNo.grid(row=0, column=0)
             busDest.grid(row=0, column=1)
             minsLeft.grid(row=0, column=2)
 
             # Expand the middle column to push the other two to the sides
             rowFrame.grid_columnconfigure(1, weight=1)
-
+            # Set the minimum size of the side columns so the middle column text is always at the same position
+            rowFrame.grid_columnconfigure(0, minsize=sideColumnMinSize)
+            rowFrame.grid_columnconfigure(2, minsize=sideColumnMinSize)
 
     def toggle_geom(self,event):
         geom=self.master.winfo_geometry()
@@ -186,10 +193,13 @@ class GUI:
         self._geom=geom
 
 def updateGui(gui):
-    nextTrips = getNextTrips()
+    # Get the next trips from Vasttrafik's public API for the station we are interested in
+    nextTrips = getNextTrips() # contains a list of tuples (bus, minutesToDepart)
+    # Sort the trips based on departure time (i.e. the second element in the tuples)
+    nextTrips.sort(key=lambda trips: trips[1])
     gui.populateTable(nextTrips)
     if mainThread.is_alive():
-        threading.Timer(30, updateGui, [gui]).start()
+        threading.Timer(refreshRate, updateGui, [gui]).start()
 
 
 
@@ -198,9 +208,8 @@ def main():
     initAPIkeys()
     root = tk.Tk()
     gui = GUI(root)
-    updateGui(gui)
-    print ("Main loop")
-    root.mainloop()
+    updateGui(gui)  # Periodically update the gui with the latest departures
+    root.mainloop()  # Blocking loop
 
 
 if __name__ == "__main__":
