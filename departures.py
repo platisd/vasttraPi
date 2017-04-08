@@ -112,15 +112,6 @@ class GUI:
         master.grid()
         master.title("Departures")
 
-        # f = Frame(root, bg = "orange", width = 500, height = 500)
-        # f.pack(side=LEFT, expand = 1)
-        #
-        # f3 = Frame(f, bg = "red", width = 500)
-        # f3.pack(side=LEFT, expand = 1, pady = 50, padx = 50)
-        #
-        # f2 = Frame(root, bg = "black", height=100, width = 100)
-        # f2.pack(side=LEFT, fill = Y)
-
         # A new frame inside master with boarder
         headerFrame = tk.Frame(master, bd="0")
         # Set the header frame's background to black
@@ -140,36 +131,20 @@ class GUI:
         subHeadersFrame.grid(row=1, sticky=tk.E+tk.W)
 
         busNoLbl = tk.Label(subHeadersFrame, text="Bus Number", font=("Helvetica", 20), bg="black", fg="white")
-        busNoLbl.grid(row=0, column=0)
         busDestLbl = tk.Label(subHeadersFrame, text="Destination", font=("Helvetica", 20), bg="black", fg="white")
-        busDestLbl.grid(row=0, column=1)
         minsLeftLbl = tk.Label(subHeadersFrame, text="Minutes Left", font=("Helvetica", 20), bg="black", fg="white")
+
+        busNoLbl.grid(row=0, column=0)
+        busDestLbl.grid(row=0, column=1)
         minsLeftLbl.grid(row=0, column=2)
-        # Center column 0 inside header frame
-        subHeadersFrame.grid_columnconfigure(0, weight=1)
+        # Expand the middle column so the other two move to the sides
         subHeadersFrame.grid_columnconfigure(1, weight=1)
-        subHeadersFrame.grid_columnconfigure(2, weight=1)
 
         # The frame that will contain the departures
         departuresFrame = tk.Frame(master)
-        departuresFrame.configure(background='white')
         departuresFrame.grid(row=2, sticky=tk.E+tk.W)
-
-        busNo = tk.Label(departuresFrame, text="16", font=("Helvetica", 20), bg="black", fg="red")
-        busNo.grid(row=0, column=0)
-        busDest = tk.Label(departuresFrame, text="Marklandsgatan", font=("Helvetica", 20), bg="black", fg="red")
-        busDest.grid(row=0, column=1)
-        minsLeft = tk.Label(departuresFrame, text="16", font=("Helvetica", 20), bg="black", fg="red")
-        minsLeft.grid(row=0, column=2)
-
         departuresFrame.grid_columnconfigure(1, weight=1)
-
-
-
-        # Center column 0 inside header frame
-        subHeadersFrame.grid_columnconfigure(0, weight=1)
-        subHeadersFrame.grid_columnconfigure(1, weight=1)
-        subHeadersFrame.grid_columnconfigure(2, weight=1)
+        self.departuresFrame = departuresFrame
 
         # Keep everything in column 0 of master centered/expanded
         master.grid_columnconfigure(0, weight=1)
@@ -182,15 +157,30 @@ class GUI:
     def populateTable(self, departures):
         # l2 = Label(self.master, text="Second")
         # l2.grid(row=1, sticky=W)
-        currentRow = 1  # start from row 1
-        for departure in departures:
-            (bus, minutes) = departure
-            bgColor = "white" if currentRow % 2 else "gray"
-            busLbl = Label(self.master, text=bus, font=("Helvetica", 16), bg=bgColor)
-            busLbl.grid(row=currentRow, column=0, sticky=W )
-            minutesLbl = Label(self.master, text=int(minutes) if int(minutes) != 0 else "Now", font=("Helvetica", 16), bg=bgColor)
-            minutesLbl.grid(row=currentRow, column=1, sticky=W)
-            currentRow += 1
+
+        # The frame that will contain each departure
+        rowFrame = tk.Frame(self.departuresFrame)
+        rowFrame.grid(row=0, columnspan=3, sticky=tk.E+tk.W)
+        rowFrame.configure(background='white')
+
+        busNo = tk.Label(rowFrame, text="16", font=("Helvetica", 20), bg="black", fg="red")
+        busNo.grid(row=0, column=0)
+        busDest = tk.Label(rowFrame, text="Marklandsgatan", font=("Helvetica", 20), bg="black", fg="red")
+        busDest.grid(row=0, column=1)
+        minsLeft = tk.Label(rowFrame, text="16", font=("Helvetica", 20), bg="black", fg="red")
+        minsLeft.grid(row=0, column=2)
+
+        rowFrame.grid_columnconfigure(1, weight=1)
+
+        # currentRow = 1  # start from row 1
+        # for departure in departures:
+        #     (bus, minutes) = departure
+        #     bgColor = "white" if currentRow % 2 else "gray"
+        #     busLbl = Label(self.master, text=bus, font=("Helvetica", 16), bg=bgColor)
+        #     busLbl.grid(row=currentRow, column=0, sticky=W )
+        #     minutesLbl = Label(self.master, text=int(minutes) if int(minutes) != 0 else "Now", font=("Helvetica", 16), bg=bgColor)
+        #     minutesLbl.grid(row=currentRow, column=1, sticky=W)
+        #     currentRow += 1
 
 
     def toggle_geom(self,event):
@@ -201,7 +191,7 @@ class GUI:
 
 def updateGui(gui):
     nextTrips = getNextTrips()
-    #gui.populateTable(nextTrips)
+    gui.populateTable(nextTrips)
     if mainThread.is_alive():
         threading.Timer(30, updateGui, [gui]).start()
 
