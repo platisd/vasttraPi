@@ -49,6 +49,7 @@ subHeaderFontSize = 20
 refreshRate = 15  # How often to check the Vasttrafik API for new departures (in seconds)
 maxFutureDepartureTime = 120  # The maximum amount of time (in minutes) left for a departure that is displayed
 timeoutNTP = 1.0  # How much to wait for the NTP server's response in seconds
+tokenTimeout = 3600  # How much time your token is valid (default is 3600 seconds, i.e. 1 hour)
 
 
 def disableScreenblanking():
@@ -99,6 +100,9 @@ def initializeConnection():
     except Exception as e:
         print ("Authentication failure, exiting!")
         sys.exit(1)
+    # We need to reinitialize the token after it's timed out
+    if mainThread.is_alive():
+        threading.Timer(tokenTimeout, initializeConnection).start()
 
 
 # Get the next trips as a list of busline numbers and minutes to leave for the next two trips
