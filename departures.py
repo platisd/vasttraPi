@@ -38,6 +38,7 @@ destinationFontSize = int(departureFontSize/2) if onPi else departureFontSize
 headerFontSize = 25
 subHeaderFontSize = 20
 refreshRate = 15  # How often to check the Vasttrafik API for new departures (in seconds)
+maxFutureDepartureTime = 120  # The maximum amount of time (in minutes) left for a departure that is displayed
 
 
 # Fetches the time from NTP server. Source: http://blog.mattcrampton.com/post/88291892461/query-an-ntp-server-from-python
@@ -171,6 +172,9 @@ class GUI:
         currentRow = 0
         for departure in departures:
             (bus, minutes) = departure
+            # If a departure is too far in the future, don't display it
+            if minutes > maxFutureDepartureTime:
+                continue
             # Change background color for each row
             bgColor = "gray" if currentRow % 2 else "white"
 
