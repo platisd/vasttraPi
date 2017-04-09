@@ -5,12 +5,15 @@ VasttraPi - Your personal departures screen for Västtrafik buses
 
 Running on: 2017-03-02-raspbian-jessie
 To run the python GUI on startup appended python3 /home/pi/vasttraPi/departures.py in /home/pi/.xsession
+
+PEP8 check with: pep8 --ignore=E501 departures.py
 """
 import pytrafik.client
 import json
 from socket import AF_INET, SOCK_DGRAM
 import socket
-import struct, time
+import struct
+import time
 import threading
 from datetime import datetime
 from collections import defaultdict
@@ -34,11 +37,11 @@ mainThread = threading.current_thread()
 LINDHOLMEN_ID = "9021014004490000"
 TEKNIKGATAN_ID = "9021014006675000"
 stations = {"Lindholmen": LINDHOLMEN_ID, "Teknikgatan": TEKNIKGATAN_ID}
-destinations= {"16": "Marklandsgatan", "99": "Hj. Bratningsplatsen", "45": "Backebol",
-               "55": "Johanneberg", "16X": "Centralstationen", "121": "Partille"}
+destinations = {"16": "Marklandsgatan", "99": "Hj. Bratningsplatsen", "45": "Backebol",
+                "55": "Johanneberg", "16X": "Centralstationen", "121": "Partille"}
 sideColumnMinSize = 100
 departureFontSize = 40
-destinationFontSize = int(departureFontSize/2) if onPi else departureFontSize
+destinationFontSize = int(departureFontSize / 2) if onPi else departureFontSize
 headerFontSize = 25
 subHeaderFontSize = 20
 refreshRate = 15  # How often to check the Vasttrafik API for new departures (in seconds)
@@ -46,23 +49,23 @@ maxFutureDepartureTime = 120  # The maximum amount of time (in minutes) left for
 
 
 # Fetches the time from NTP server. Source: http://blog.mattcrampton.com/post/88291892461/query-an-ntp-server-from-python
-def getNTPTime(host = "pool.ntp.org"):
+def getNTPTime(host="pool.ntp.org"):
     port = 123
     buf = 1024
-    address = (host,port)
+    address = (host, port)
     msg = '\x1b' + 47 * '\0'
 
-    # reference time (in seconds since 1900-01-01 00:00:00)
-    TIME1970 = 2208988800 # 1970-01-01 00:00:00
+    # Reference time (in seconds since 1900-01-01 00:00:00)
+    TIME1970 = 2208988800  # 1970-01-01 00:00:00
 
     # connect to server
     client = socket.socket(AF_INET, SOCK_DGRAM)
     client.sendto(bytes(msg, "UTF-8"), address)
     msg, address = client.recvfrom(buf)
 
-    t = struct.unpack( "!12I", msg )[10]
+    t = struct.unpack("!12I", msg)[10]
     t -= TIME1970
-    d = time.strptime(time.ctime(t),"%a %b %d %H:%M:%S %Y")
+    d = time.strptime(time.ctime(t), "%a %b %d %H:%M:%S %Y")
     return (time.strftime("%Y-%m-%d", d), time.strftime("%H:%M", d))
 
 
@@ -103,7 +106,7 @@ def getNextTrips():
                 except Exception as e:
                     print ("Error while parsing server response")
     #print (sorted(trips.items()))
-    nextTrips=[]
+    nextTrips = []
     for busLine, departureTimes in trips.items():
             remainingDepartures = 2  # The number of departures that we care to show
             for departureTime in departureTimes:
@@ -121,7 +124,6 @@ def getNextTrips():
     return nextTrips
 
 
-
 class GUI:
     def __init__(self, master, **kwargs):
         self.master = master
@@ -137,7 +139,7 @@ class GUI:
         # Set the header frame's background to black
         headerFrame.configure(background='black')
         # Use the grid layout and expand the frame
-        headerFrame.grid(row=0, sticky=tk.E+tk.W)
+        headerFrame.grid(row=0, sticky=tk.E + tk.W)
 
         # Label inside heade frame
         headerLbl = tk.Label(headerFrame, text="Departures", font=("Helvetica bold", headerFontSize), bg="black", fg="white")
@@ -148,7 +150,7 @@ class GUI:
 
         subHeadersFrame = tk.Frame(master)
         subHeadersFrame.configure(background='black')
-        subHeadersFrame.grid(row=1, sticky=tk.E+tk.W)
+        subHeadersFrame.grid(row=1, sticky=tk.E + tk.W)
 
         busNoLbl = tk.Label(subHeadersFrame, text="Bus Number", font=("Helvetica", subHeaderFontSize), bg="black", fg="white")
         busDestLbl = tk.Label(subHeadersFrame, text="Destination", font=("Helvetica", subHeaderFontSize), bg="black", fg="white")
@@ -162,7 +164,7 @@ class GUI:
 
         # The frame that will contain the departures
         departuresFrame = tk.Frame(master)
-        departuresFrame.grid(row=2, sticky=tk.E+tk.W)
+        departuresFrame.grid(row=2, sticky=tk.E + tk.W)
         departuresFrame.grid_columnconfigure(1, weight=1)
         self.departuresFrame = departuresFrame  # Class variable to hold the container frame for all the departures
 
@@ -186,7 +188,7 @@ class GUI:
 
             # The frame that will contain each departure
             rowFrame = tk.Frame(self.departuresFrame)
-            rowFrame.grid(row=currentRow, columnspan=3, sticky=tk.E+tk.W)
+            rowFrame.grid(row=currentRow, columnspan=3, sticky=tk.E + tk.W)
             rowFrame.configure(background=bgColor)
             currentRow += 1
 
@@ -207,7 +209,6 @@ class GUI:
             # Add the newly created frame to a list so we can destroy it later when we refresh the departures
             self.departureRowFrames.append(rowFrame)
 
-
     # Destroy any existing frames containing departures that already exist
     def resetDepartures(self):
         for frame in self.departureRowFrames:
@@ -218,7 +219,7 @@ class GUI:
 
 def updateGui(gui):
     # Get the next trips from Vasttrafik's public API for the station we are interested in
-    nextTrips = getNextTrips() # contains a list of tuples (bus, minutesToDepart)
+    nextTrips = getNextTrips()  # Contains a list of tuples (bus, minutesToDepart)
     # Sort the trips based on departure time (i.e. the second element in the tuples)
     nextTrips.sort(key=lambda trips: trips[1])
     # Update the displayed departures if they are different to the ones currently displayed
@@ -228,7 +229,6 @@ def updateGui(gui):
         gui.currentlyDisplayedDepartures = nextTrips
     if mainThread.is_alive():
         threading.Timer(refreshRate, updateGui, [gui]).start()
-
 
 
 def main():
