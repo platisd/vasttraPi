@@ -121,10 +121,12 @@ def getNextTrips():
 class GUI:
     def __init__(self, master, **kwargs):
         self.master = master
-        master.grid()
-        master.title("Departures")
         # A list that will hold the temporary departure frames so to destroy them upon refreshing
         self.departureRowFrames = []
+        self.currentlyDisplayedDepartures = []  # Used to decide whether to refresh the display
+
+        self.master.grid()
+        self.master.title("Departures")
 
         # A new frame inside master with boarder
         headerFrame = tk.Frame(master, bd="0")
@@ -215,8 +217,11 @@ def updateGui(gui):
     nextTrips = getNextTrips() # contains a list of tuples (bus, minutesToDepart)
     # Sort the trips based on departure time (i.e. the second element in the tuples)
     nextTrips.sort(key=lambda trips: trips[1])
-    gui.resetDepartures()  # Remove any already existing departures
-    gui.populateTable(nextTrips)
+    # Update the displayed departures if they are different to the ones currently displayed
+    if nextTrips != gui.currentlyDisplayedDepartures:
+        gui.resetDepartures()  # Remove any already existing departures
+        gui.populateTable(nextTrips)
+        gui.currentlyDisplayedDepartures = nextTrips
     if mainThread.is_alive():
         threading.Timer(refreshRate, updateGui, [gui]).start()
 
