@@ -48,6 +48,9 @@ refreshRate = 15  # How often to check the Vasttrafik API for new departures (in
 maxFutureDepartureTime = 120  # The maximum amount of time (in minutes) left for a departure that is displayed
 
 
+def disableScreenblanking():
+    os.system("export DISPLAY=:0.0 && xset s off && xset s noblank && xset -dpms")
+
 # Fetches the time from NTP server. Source: http://blog.mattcrampton.com/post/88291892461/query-an-ntp-server-from-python
 def getNTPTime(host="pool.ntp.org"):
     port = 123
@@ -232,6 +235,9 @@ def updateGui(gui):
 
 
 def main():
+    # When we are running on the raspberry pi we do not want the screen to turn off
+    if onPi:
+        disableScreenblanking()
     # Initialize the API keys using the config file
     initAPIkeys()
     root = tk.Tk()
