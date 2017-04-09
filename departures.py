@@ -1,16 +1,20 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+"""
+VasttraPi - Your personal departures screen for Västtrafik buses
+
+Running on: 2017-03-02-raspbian-jessie
+To run the python GUI on startup appended python3 /home/pi/vasttraPi/departures.py in /home/pi/.xsession
+"""
 import pytrafik.client
 import json
 from socket import AF_INET, SOCK_DGRAM
-import sys
 import socket
 import struct, time
 import threading
 from datetime import datetime
 from collections import defaultdict
 import tkinter as tk
-from tkinter import ttk
 import os
 import getpass
 
@@ -23,7 +27,7 @@ onPi = getpass.getuser() == "pi"  # To determine whether we are on the raspberry
 
 apiKey = None
 apiSecret = None
-pathToConfig = "api-config"
+pathToConfig = "api-config"  # Path to a non-version controlled file that stores API tokens
 
 mainThread = threading.current_thread()
 
