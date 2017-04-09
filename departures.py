@@ -19,6 +19,7 @@ from datetime import datetime
 from collections import defaultdict
 import tkinter as tk
 import os
+import sys
 import getpass
 
 # Change working directory to the one that the file is residing in
@@ -31,6 +32,7 @@ onPi = getpass.getuser() == "pi"  # To determine whether we are on the raspberry
 apiKey = None
 apiSecret = None
 pathToConfig = "api-config"  # Path to a non-version controlled file that stores API tokens
+vasttrafik = None  # The variable to hold the socket connection to the public API
 
 mainThread = threading.current_thread()
 
@@ -72,7 +74,7 @@ def getNTPTime(host="pool.ntp.org"):
     return (time.strftime("%Y-%m-%d", d), time.strftime("%H:%M", d))
 
 
-# Fethes the consumer and secret key from configuration file (not version controlled).
+# Fetches the consumer and secret key from configuration file (not version controlled).
 # The first line is the key and the second is the secret.
 def initAPIkeys():
     f = open(pathToConfig)
@@ -82,15 +84,20 @@ def initAPIkeys():
     f.close()
 
 
+# Initializes the connection to the Vasttrafik server
+def initializeConnection():
+    try:
+        global vasttrafik
+        vasttrafik = pytrafik.client.Client("json", apiKey, apiSecret)
+    except Exception as e:
+        print ("Authentication failure, exiting!")
+        sys.exit(1)
+
+
 # Get the next trips as a list of busline numbers and minutes to leave for the next two trips
 def getNextTrips():
     # Get the current time and date from an NTP server as the host might not have an RTC
     (currentDate, currentTime) = getNTPTime()
-    # Initialize the connection to the Vasttrafik server
-    try:
-        vasttrafik = pytrafik.client.Client("json", apiKey, apiSecret)
-    except Exception as e:
-        print ("Authentication failure, exiting!")
     trips = defaultdict(list)  # A dictionary of lists, holding a list of departures for each bus
     for stationName, stationID in stations.items():
         # Get the departures for each station we are interested in
@@ -235,11 +242,13 @@ def updateGui(gui):
 
 
 def main():
+    # Initialize the API keys using the config file
+    initAPIkeys()
+    # Initialize the connection to the Vasttrafik public API. If not succesful the script will exit here
+    initializeConnection()
     # When we are running on the raspberry pi we do not want the screen to turn off
     if onPi:
         disableScreenblanking()
-    # Initialize the API keys using the config file
-    initAPIkeys()
     root = tk.Tk()
     gui = GUI(root)
     updateGui(gui)  # Periodically update the gui with the latest departures
