@@ -48,10 +48,12 @@ headerFontSize = 25
 subHeaderFontSize = 20
 refreshRate = 15  # How often to check the Vasttrafik API for new departures (in seconds)
 maxFutureDepartureTime = 120  # The maximum amount of time (in minutes) left for a departure that is displayed
+timeoutNTP = 1.0  # How much to wait for the NTP server's response in seconds
 
 
 def disableScreenblanking():
     os.system("export DISPLAY=:0.0 && xset s off && xset s noblank && xset -dpms")
+
 
 # Fetches the time from NTP server. Source: http://blog.mattcrampton.com/post/88291892461/query-an-ntp-server-from-python
 def getNTPTime(host="pool.ntp.org"):
@@ -65,11 +67,16 @@ def getNTPTime(host="pool.ntp.org"):
 
     # connect to server
     client = socket.socket(AF_INET, SOCK_DGRAM)
-    client.sendto(bytes(msg, "UTF-8"), address)
-    msg, address = client.recvfrom(buf)
+    client.settimeout(timeoutNTP)  # Do not wait too much to receive a response from the NTP server
+    try:
+        client.sendto(bytes(msg, "UTF-8"), address)
+        msg, address = client.recvfrom(buf)
+        t = struct.unpack("!12I", msg)[10]
+        t -= TIME1970
+    except:
+        print ("WARNING: Could not fetch time from NTP server! Using system time instead.")
+        t = time.time()  # Fall back to the system time when no response from ntp server
 
-    t = struct.unpack("!12I", msg)[10]
-    t -= TIME1970
     d = time.strptime(time.ctime(t), "%a %b %d %H:%M:%S %Y")
     return (time.strftime("%Y-%m-%d", d), time.strftime("%H:%M", d))
 
