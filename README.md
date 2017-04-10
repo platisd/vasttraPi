@@ -24,6 +24,7 @@ First, prepare your Raspberry Pi for connecting with your local wireless network
 * Make the Python3 GUI start right after boot
   * `nano /home/pi/.xsession`
   * Add: `python3 /home/pi/vasttraPi/departures.py`
+  * To undo this, do not just empty the .xsession file, remove it completely.
 * Sync, reboot and the departures screen should pop up
   * `sync`
   * `sudo reboot`
