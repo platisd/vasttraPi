@@ -1,0 +1,6 @@
+# Ignore everything
+*
+# Except the following files
+!.gitignore
+!vasttrapi_pmu.sch
+!vasttrapi_pmu.brd
