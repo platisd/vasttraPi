@@ -10,6 +10,8 @@
    - Sleep state where the microcontroller is in deep sleep and the power to the RPi is OFF.
    - Operation state where the microcontroller is triggering the relay to power on the RPi and
    can communication to it via UART.
+   - Shutdown state where the microcontroller sends a UART instruction to the RPi to begin its
+   shutdown sequence, in order to avoid damaging the SD card by abruptly turning the power off.
 
    ==== CURRENT FUNCTIONALITY ====
    Upon starting up, the microcontroller goes in deep sleep which can be interrupted by a HIGH
@@ -28,14 +30,22 @@ const boolean powerOnState = LOW; // The rpiPwrPin state that turns the power on
 
 volatile unsigned long timeToSleep = 0;
 const unsigned long awakePeriod = 600000; // Time in milliseconds to remain awake on every new touch
-const unsigned long shutdownTime = 15000; // Time in milliseconds to wait for the RPi to shutdown
+const unsigned long shutdownTime = 12000; // Time in milliseconds to wait for the RPi to shutdown
+
+enum PowerState {
+  SLEEP,
+  OPERATION,
+  SHUTDOWN
+};
+PowerState currentState = SLEEP; // Begin in a deep sleep state
 
 /**
    The change interrupt callback
 */
 ISR (PCINT0_vect) {
   // We register a touch event only when the signal from the touchSensor is rising
-  if (digitalRead(touchSensorPin) == HIGH) {
+  // Ignore touch events while in shutdown state
+  if (currentState != SHUTDOWN && digitalRead(touchSensorPin) == HIGH) {
     timeToSleep = millis() + awakePeriod;
   }
 }
@@ -70,20 +80,16 @@ void signalShutdown() {
 }
 
 /**
-   Wait for the RPi to shutdown properly, while disabling interrupts so to
-   avoid new touch events from being registered.
+   Wait for the RPi to shutdown properly. In the future more logic might be added here.
 */
 void waitForRPiShutdown() {
-  noInterrupts();
   delay(shutdownTime);
-  interrupts();
 }
 
 void setup() {
   Serial.begin(9600); // The Universal ATtinyCore library by Spence Konde uses PB0 as TX and PB1 as RX
   pinMode(rpiPwrPin, OUTPUT);
   pinMode(touchSensorPin, INPUT);
-  turnRPiPowerOff(); // When starting up, make sure the power to the RPi is off
   // Setup pin change interrupt for D2
   PCMSK |= bit (PCINT2); // want pin D2 (PB2)
   GIFR |= bit (PCIF); // clear any outstanding interrupts
@@ -91,12 +97,26 @@ void setup() {
 }
 
 void loop() {
-  if (millis() >= timeToSleep) { // Check if it is currently time to be asleep
-    signalShutdown(); // Send a command via UART to the RPi which will make it initiate a shutdown sequence
-    waitForRPiShutdown(); // Wait for the RPi to shutdown, while disabling interrupts so new touch events are not logged
-    turnRPiPowerOff(); // Cut off the power to the RPi
-    goToSleep(); // Deep sleep until a change interrupt at the specified pin is triggered
-  } else { // If we should not be sleeping, then we should be awake and doing stuff
-    turnRPiPowerOn(); // Turn on the power to the RPi (if this is already on, it won't make any difference)
+  switch (currentState) {
+    case SLEEP:
+      turnRPiPowerOff(); // Cut off the power to the RPi
+      goToSleep(); // Deep sleep until a change interrupt at the specified pin is triggered
+      currentState = OPERATION; // If we reach this, it means that a touch was registered so we should be operating
+      break;
+    case OPERATION:
+      turnRPiPowerOn(); // Turn on the power to the RPi (if this is already on, it won't make any difference)
+      if (millis() >= timeToSleep) { // Check if it is currently time to be asleep
+        // If we were operational but it's time to sleep, then we should move to the shutdown state
+        currentState = SHUTDOWN;
+      }
+      break;
+    case SHUTDOWN:
+      signalShutdown(); // Send a command via UART to the RPi which will make it initiate a shutdown sequence
+      waitForRPiShutdown(); // Wait for the RPi to shutdown, while disabling interrupts so new touch events are not logged
+      // Now that we should be certain that the RPi has shut down, we can put our state to SLEEP
+      currentState = SLEEP;
+      break;
+    default:
+      break;
   }
 }
