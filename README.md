@@ -17,8 +17,8 @@ First, prepare your Raspberry Pi for connecting with your local wireless network
   * `git clone https://github.com/axelniklasson/PyTrafik.git`
 * Install the PyTrafik Python3 module
   * `sudo pip3 install PyTrafik/`
-* Make sure you have PySerial installed (should come with the Raspbian distribution)
-  * sudo pip3 install pyserial
+* Make sure you have PySerial 3.3 or greater installed
+  * sudo pip3 install pyserial --upgrade
 * Create an api-config file with your API tokens
   * `nano vasttraPi/api-config`
   * Add your API tokens. The first line should be the (public) key and the second is the secret.
