@@ -1,23 +1,23 @@
 /**
- * Power Control board for the Raspberry Pi using an ATTinyx5 microcontroller.
- * The Power Control board is using a relay to turn on and off the power to a Raspberry Pi.
- * Additionally, they are connected via (software) UART for communication when the RPi is on.
- * The microcontroller connected to a capacitive touch sensor which allows interaction with
- * the external user that wants to turn the Raspberry Pi on and off.
- * 
- * ==== STATES ====
- * The microcontroller has the following states:
- * - Sleep state where the microcontroller is in deep sleep and the power to the RPi is OFF.
- * - Operation state where the microcontroller is triggering the relay to power on the RPi and
- * can communication to it via UART.
- * 
- * ==== CURRENT FUNCTIONALITY ====
- * Upon starting up, the microcontroller goes in deep sleep which can be interrupted by a HIGH
- * signal coming from the capacitive sensor. This initiates a window of operation for the Raspberry Pi
- * during which it will remain on. Every consecutive touch moves the end of this window further in the
- * future, therefore, prolonging the period that the Raspberry Pi is functioning. In other words, on
- * every touch, the operation gets extended for the specified amount of time.
- */
+   Power Control board for the Raspberry Pi using an ATTinyx5 microcontroller.
+   The Power Control board is using a relay to turn on and off the power to a Raspberry Pi.
+   Additionally, they are connected via (software) UART for communication when the RPi is on.
+   The microcontroller connected to a capacitive touch sensor which allows interaction with
+   the external user that wants to turn the Raspberry Pi on and off.
+
+   ==== STATES ====
+   The microcontroller has the following states:
+   - Sleep state where the microcontroller is in deep sleep and the power to the RPi is OFF.
+   - Operation state where the microcontroller is triggering the relay to power on the RPi and
+   can communication to it via UART.
+
+   ==== CURRENT FUNCTIONALITY ====
+   Upon starting up, the microcontroller goes in deep sleep which can be interrupted by a HIGH
+   signal coming from the capacitive sensor. This initiates a window of operation for the Raspberry Pi
+   during which it will remain on. Every consecutive touch moves the end of this window further in the
+   future, therefore, prolonging the period that the Raspberry Pi is functioning. In other words, on
+   every touch, the operation gets extended for the specified amount of time.
+*/
 
 #include <avr/sleep.h>    // Sleep Modes
 #include <avr/power.h>    // Power management
@@ -28,37 +28,55 @@ const boolean powerOnState = LOW; // The rpiPwrPin state that turns the power on
 
 volatile unsigned long timeToSleep = 0;
 const unsigned long awakePeriod = 600000; // Time in milliseconds to remain awake on every new touch
+const unsigned long shutdownTime = 15000; // Time in milliseconds to wait for the RPi to shutdown
 
 /**
- * The change interrupt callback
- */
-ISR (PCINT0_vect)
-{
+   The change interrupt callback
+*/
+ISR (PCINT0_vect) {
   // We register a touch event only when the signal from the touchSensor is rising
-  if (digitalRead(touchSensorPin) == HIGH){
+  if (digitalRead(touchSensorPin) == HIGH) {
     timeToSleep = millis() + awakePeriod;
   }
 }
 
 /**
- * Makes the microcontroller go to deep sleep until a change interrupt occurs
- */
+   Makes the microcontroller go to deep sleep until a change interrupt occurs
+*/
 void goToSleep() {
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  ADCSRA = 0;            // turn off ADC
-  power_all_disable ();  // power off ADC, Timer 0 and 1, serial interface
+  ADCSRA = 0; // turn off ADC
+  power_all_disable (); // power off ADC, Timer 0 and 1, serial interface
   sleep_enable();
-  sleep_cpu();          // Sleep here and wait for the interrupt
+  sleep_cpu(); // Sleep here and wait for the interrupt
   sleep_disable();
-  power_all_enable();    // power everything back on
+  power_all_enable(); // power everything back on
 }
 
-void turnRPiPowerOn(){
+void turnRPiPowerOn() {
   digitalWrite(rpiPwrPin, powerOnState);
 }
 
-void turnRPiPowerOff(){
+void turnRPiPowerOff() {
   digitalWrite(rpiPwrPin, !powerOnState);
+}
+
+/**
+   UART command sent to the RPi to trigger its shutdown sequence
+*/
+void signalShutdown() {
+  Serial.println("off");
+  Serial.flush(); // Make sure that UART output has been transmitted before exiting this method
+}
+
+/**
+   Wait for the RPi to shutdown properly, while disabling interrupts so to
+   avoid new touch events from being registered.
+*/
+void waitForRPiShutdown() {
+  noInterrupts();
+  delay(shutdownTime);
+  interrupts();
 }
 
 void setup() {
@@ -67,14 +85,16 @@ void setup() {
   pinMode(touchSensorPin, INPUT);
   turnRPiPowerOff(); // When starting up, make sure the power to the RPi is off
   // Setup pin change interrupt for D2
-  PCMSK  |= bit (PCINT2); // want pin D2 (PB2)
-  GIFR   |= bit (PCIF); // clear any outstanding interrupts
-  GIMSK  |= bit (PCIE); // enable pin change interrupts
+  PCMSK |= bit (PCINT2); // want pin D2 (PB2)
+  GIFR |= bit (PCIF); // clear any outstanding interrupts
+  GIMSK |= bit (PCIE); // enable pin change interrupts
 }
 
 void loop() {
   if (millis() >= timeToSleep) { // Check if it is currently time to be asleep
-    turnRPiPowerOff(); // Turn off the power to the RPi
+    signalShutdown(); // Send a command via UART to the RPi which will make it initiate a shutdown sequence
+    waitForRPiShutdown(); // Wait for the RPi to shutdown, while disabling interrupts so new touch events are not logged
+    turnRPiPowerOff(); // Cut off the power to the RPi
     goToSleep(); // Deep sleep until a change interrupt at the specified pin is triggered
   } else { // If we should not be sleeping, then we should be awake and doing stuff
     turnRPiPowerOn(); // Turn on the power to the RPi (if this is already on, it won't make any difference)
