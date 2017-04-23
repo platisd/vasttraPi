@@ -21,6 +21,7 @@ import tkinter as tk
 import os
 import sys
 import getpass
+import serial
 
 # Change working directory to the one that the file is residing in
 abspath = os.path.abspath(__file__)
@@ -50,6 +51,15 @@ refreshRate = 15  # How often to check the Vasttrafik API for new departures (in
 maxFutureDepartureTime = 120  # The maximum amount of time (in minutes) left for a departure that is displayed
 timeoutNTP = 1.0  # How much to wait for the NTP server's response in seconds
 tokenTimeout = 3600  # How much time your token is valid (default is 3600 seconds, i.e. 1 hour)
+
+# Configure the serial connection attributes without initializing it
+powerControlSerial = serial.Serial()
+powerControlSerial.port = "/dev/ttyUSB0"
+powerControlSerial.baudrate = 9600
+powerControlSerial.bytesize = 8
+powerControlSerial.parity = "N"
+powerControlSerial.stopbits = 1
+powerControlSerial.timeout = 0.5  # The amount of seconds to wait for incoming UART stream
 
 
 def disableScreenblanking():
@@ -248,8 +258,29 @@ def updateGui(gui):
         gui.resetDepartures()  # Remove any already existing departures
         gui.populateTable(nextTrips)
         gui.currentlyDisplayedDepartures = nextTrips
+    processSerialInput()  # Check to see if there is incoming data from UART
     if mainThread.is_alive():
         threading.Timer(refreshRate, updateGui, [gui]).start()
+
+
+def initializeSerial():
+    try:
+        powerControlSerial.open()
+    except:
+        pass
+
+
+def processSerialInput():
+    if not powerControlSerial.is_open:
+        print ("Warning: Serial port has not opened succesfully")
+        return
+    serialInput = powerControlSerial.readline().decode("utf-8").strip()  # Read until a \n character is found or timeout
+    # Check the command sent by the power control board
+    if serialInput == "off":  # Shut the system down
+        if onPi:
+            powerControlSerial.close()
+            # Commence a system-wide shutdown
+            os.system("sudo shutdown -h now")
 
 
 def main():
@@ -260,6 +291,8 @@ def main():
     # When we are running on the raspberry pi we do not want the screen to turn off
     if onPi:
         disableScreenblanking()
+    # Initialize UART towards the power control board
+    initializeSerial()
     root = tk.Tk()
     gui = GUI(root)
     updateGui(gui)  # Periodically update the gui with the latest departures
