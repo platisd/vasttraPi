@@ -47,7 +47,8 @@ departureFontSize = 40
 destinationFontSize = int(departureFontSize / 2) if onPi else departureFontSize
 headerFontSize = 25
 subHeaderFontSize = 20
-refreshRate = 15  # How often to check the Vasttrafik API for new departures (in seconds)
+guiRefreshRate = 15  # How often to check the Vasttrafik API for new departures (in seconds)
+serialPollRate = 3  # How often to check for incoming serial data (in seconds)
 maxFutureDepartureTime = 120  # The maximum amount of time (in minutes) left for a departure that is displayed
 timeoutNTP = 1.0  # How much to wait for the NTP server's response in seconds
 tokenTimeout = 3600  # How much time your token is valid (default is 3600 seconds, i.e. 1 hour)
@@ -59,7 +60,7 @@ powerControlSerial.baudrate = 9600
 powerControlSerial.bytesize = 8
 powerControlSerial.parity = "N"
 powerControlSerial.stopbits = 1
-powerControlSerial.timeout = 0.5  # The amount of seconds to wait for incoming UART stream
+powerControlSerial.timeout = 0.1  # The amount of seconds to wait for incoming UART stream
 
 
 def disableScreenblanking():
@@ -258,9 +259,8 @@ def updateGui(gui):
         gui.resetDepartures()  # Remove any already existing departures
         gui.populateTable(nextTrips)
         gui.currentlyDisplayedDepartures = nextTrips
-    processSerialInput()  # Check to see if there is incoming data from UART
     if mainThread.is_alive():
-        threading.Timer(refreshRate, updateGui, [gui]).start()
+        threading.Timer(guiRefreshRate, updateGui, [gui]).start()
 
 
 def initializeSerial():
@@ -283,6 +283,14 @@ def processSerialInput():
             os.system("sudo shutdown -h now")
 
 
+# Continuously monitor for serial input
+def pollSerial():
+    print ("Checking serial")
+    processSerialInput()
+    if mainThread.is_alive():
+        threading.Timer(serialPollRate, pollSerial).start()
+
+
 def main():
     # Initialize the API keys using the config file
     initAPIkeys()
@@ -296,6 +304,7 @@ def main():
     root = tk.Tk()
     gui = GUI(root)
     updateGui(gui)  # Periodically update the gui with the latest departures
+    pollSerial()  # Poll UART for incoming commands from the control board
     root.mainloop()  # Blocking loop
 
 
