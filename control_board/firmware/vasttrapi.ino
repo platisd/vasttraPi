@@ -26,7 +26,7 @@
 
 const unsigned short touchSensorPin = PB2;
 const unsigned short rpiPwrPin = PB3;
-const boolean powerOnState = LOW; // The rpiPwrPin state that turns the power on to the RPi
+const boolean powerOnState = HIGH; // The rpiPwrPin state that turns the power on to the RPi
 
 volatile unsigned long timeToSleep = 0;
 const unsigned long awakePeriod = 600000; // Time in milliseconds to remain awake on every new touch
