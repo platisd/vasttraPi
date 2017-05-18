@@ -1964,6 +1964,19 @@ Footprint unproven</description>
 <wire x1="1.9" y1="1.9" x2="1.9" y2="0.7" width="0.127" layer="21"/>
 <wire x1="1.9" y1="-1.9" x2="1.9" y2="-0.9" width="0.127" layer="21"/>
 </package>
+<package name="DO-41">
+<wire x1="2.54" y1="1.27" x2="2.54" y2="-1.27" width="0.127" layer="21"/>
+<wire x1="2.54" y1="-1.27" x2="-2.54" y2="-1.27" width="0.127" layer="21"/>
+<wire x1="-2.54" y1="-1.27" x2="-2.54" y2="1.27" width="0.127" layer="21"/>
+<wire x1="-2.54" y1="1.27" x2="2.54" y2="1.27" width="0.127" layer="21"/>
+<pad name="1" x="-4.445" y="0" drill="1.0414" diameter="1.905"/>
+<pad name="2" x="4.445" y="0" drill="1.0414" diameter="1.905"/>
+<text x="-3.81" y="1.651" size="0.889" layer="25" ratio="11">&gt;NAME</text>
+<text x="-3.81" y="-2.54" size="0.889" layer="27" ratio="11">&gt;VALUE</text>
+<rectangle x1="1.27" y1="-1.27" x2="1.905" y2="1.27" layer="21"/>
+<rectangle x1="-3.3" y1="-0.3175" x2="-2.54" y2="0.3175" layer="21"/>
+<rectangle x1="2.54" y1="-0.3175" x2="3.3" y2="0.3175" layer="21"/>
+</package>
 </packages>
 <symbols>
 <symbol name="LED-1">
@@ -1981,6 +1994,16 @@ Footprint unproven</description>
 <wire x1="1.524" y1="3.81" x2="1.397" y2="3.048" width="0.254" layer="94"/>
 <text x="-7.62" y="1.27" size="1.27" layer="95" ratio="10">&gt;NAME</text>
 <text x="-5.08" y="-5.08" size="1.27" layer="96" ratio="10">&gt;VALUE</text>
+<pin name="+" x="-3.81" y="0" visible="off" length="short" direction="pas"/>
+<pin name="-" x="3.81" y="0" visible="off" length="short" direction="pas" rot="R180"/>
+</symbol>
+<symbol name="DIODE*-1">
+<wire x1="-1.27" y1="-2.54" x2="-1.27" y2="2.54" width="0.254" layer="94"/>
+<wire x1="-1.27" y1="-2.54" x2="1.27" y2="0" width="0.254" layer="94"/>
+<wire x1="-1.27" y1="2.54" x2="1.27" y2="0" width="0.254" layer="94"/>
+<wire x1="1.27" y1="2.54" x2="1.27" y2="-2.54" width="0.254" layer="94"/>
+<text x="-3.81" y="2.54" size="1.27" layer="95" ratio="10">&gt;NAME</text>
+<text x="-3.81" y="-3.81" size="1.27" layer="96" ratio="10">&gt;VALUE</text>
 <pin name="+" x="-3.81" y="0" visible="off" length="short" direction="pas"/>
 <pin name="-" x="3.81" y="0" visible="off" length="short" direction="pas" rot="R180"/>
 </symbol>
@@ -2006,6 +2029,26 @@ Footprint unproven</description>
 </device>
 </devices>
 </deviceset>
+<deviceset name="DIP-DIODE-50V-1A-1N4001(DO-41)" prefix="D" uservalue="yes">
+<description>304010006</description>
+<gates>
+<gate name="G$1" symbol="DIODE*-1" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="DO-41">
+<connects>
+<connect gate="G$1" pin="+" pad="1"/>
+<connect gate="G$1" pin="-" pad="2"/>
+</connects>
+<technologies>
+<technology name="">
+<attribute name="MPN" value="1N4001" constant="no"/>
+<attribute name="VALUE" value="1N4001" constant="no"/>
+</technology>
+</technologies>
+</device>
+</devices>
+</deviceset>
 </devicesets>
 </library>
 </libraries>
@@ -2023,7 +2066,6 @@ Footprint unproven</description>
 <part name="JP1" library="Seeed-OPL-Connector" deviceset="DIP-USB-A-TYPE-FMAL(4+2P-2.0-90D)" device="" value="USB4-2.0-90D"/>
 <part name="Q1" library="SparkFun-DiscreteSemi" deviceset="TRANSISTOR_NPN" device="BC547"/>
 <part name="R1" library="SparkFun-Passives" deviceset="RESISTOR" device="PTH-1/4W" value="1KΩ"/>
-<part name="SUPPLY1" library="SparkFun-Aesthetics" deviceset="VCC" device=""/>
 <part name="GND1" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="U2" library="Itead_BP_110825.lbr" deviceset="RELAY" device=""/>
 <part name="GND2" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
@@ -2046,8 +2088,6 @@ Footprint unproven</description>
 <part name="S2" library="SparkFun-Electromechanical" deviceset="SWITCH-DPDT" device="OS"/>
 <part name="J2" library="Seeed-OPL-Connector" deviceset="DIP-BLACK-FEMALE-HEADER-VERT(3P-2.54)" device="" value="3p-2.54"/>
 <part name="GND10" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
-<part name="SUPPLY5" library="SparkFun-Aesthetics" deviceset="VCC" device=""/>
-<part name="SUPPLY6" library="SparkFun-Aesthetics" deviceset="VCC" device=""/>
 <part name="D1" library="Seeed-OPL-Diode" deviceset="DIP-LED-GREEN-GREEN(2P-D5MM)" device="" value="G502DC"/>
 <part name="R2" library="SparkFun-Passives" deviceset="RESISTOR" device="PTH-1/4W" value="220Ω"/>
 <part name="GND11" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
@@ -2059,6 +2099,8 @@ Footprint unproven</description>
 <part name="C4" library="SparkFun-Capacitors" deviceset="0.1UF-50V-20%(PTH)" device="KIT-EZ" value="0.1 uF"/>
 <part name="GND14" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="C5" library="SparkFun-Capacitors" deviceset="0.1UF-50V-20%(PTH)" device="KIT-EZ" value="0.1 uF"/>
+<part name="D2" library="Seeed-OPL-Diode" deviceset="DIP-DIODE-50V-1A-1N4001(DO-41)" device="" value="1N4001"/>
+<part name="SUPPLY9" library="SparkFun-Aesthetics" deviceset="VCC" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -2074,7 +2116,6 @@ OUT</text>
 <instance part="JP1" gate="G$1" x="116.84" y="106.68" rot="R90"/>
 <instance part="Q1" gate="G$1" x="129.54" y="66.04" rot="R90"/>
 <instance part="R1" gate="G$1" x="129.54" y="58.42" rot="R90"/>
-<instance part="SUPPLY1" gate="G$1" x="19.05" y="102.87"/>
 <instance part="GND1" gate="1" x="119.38" y="99.06"/>
 <instance part="U2" gate="G$1" x="107.95" y="76.2" rot="R90"/>
 <instance part="GND2" gate="1" x="137.16" y="68.58" rot="R90"/>
@@ -2097,8 +2138,6 @@ OUT</text>
 <instance part="S2" gate="G$1" x="130.81" y="87.63" rot="R180"/>
 <instance part="J2" gate="G$1" x="13.97" y="34.29" rot="R270"/>
 <instance part="GND10" gate="1" x="7.62" y="48.26" rot="R270"/>
-<instance part="SUPPLY5" gate="G$1" x="17.78" y="48.26" rot="R270"/>
-<instance part="SUPPLY6" gate="G$1" x="17.78" y="66.04" rot="R180"/>
 <instance part="D1" gate="G$1" x="99.06" y="100.33" rot="R180"/>
 <instance part="R2" gate="G$1" x="90.17" y="100.33" rot="R180"/>
 <instance part="GND11" gate="1" x="82.55" y="100.33" rot="R270"/>
@@ -2110,6 +2149,8 @@ OUT</text>
 <instance part="C4" gate="G$1" x="66.04" y="80.01"/>
 <instance part="GND14" gate="1" x="109.22" y="123.19" rot="R90"/>
 <instance part="C5" gate="G$1" x="106.68" y="114.3"/>
+<instance part="D2" gate="G$1" x="15.24" y="127" rot="R270"/>
+<instance part="SUPPLY9" gate="G$1" x="15.24" y="132.08"/>
 </instances>
 <busses>
 </busses>
@@ -2206,21 +2247,6 @@ OUT</text>
 <pinref part="SUPPLY3" gate="G$1" pin="VCC"/>
 </segment>
 <segment>
-<pinref part="U$1" gate="G$1" pin="VCC"/>
-<pinref part="SUPPLY1" gate="G$1" pin="VCC"/>
-<wire x1="19.05" y1="102.87" x2="19.05" y2="99.06" width="0.1524" layer="91"/>
-</segment>
-<segment>
-<pinref part="J2" gate="G$1" pin="P$1"/>
-<pinref part="SUPPLY5" gate="G$1" pin="VCC"/>
-<wire x1="17.78" y1="48.26" x2="17.78" y2="41.91" width="0.1524" layer="91"/>
-</segment>
-<segment>
-<pinref part="U1" gate="G$1" pin="VCC"/>
-<pinref part="SUPPLY6" gate="G$1" pin="VCC"/>
-<wire x1="17.78" y1="66.04" x2="25.4" y2="66.04" width="0.1524" layer="91"/>
-</segment>
-<segment>
 <pinref part="S2" gate="G$1" pin="2"/>
 <pinref part="SUPPLY7" gate="G$1" pin="VCC"/>
 <wire x1="135.89" y1="85.09" x2="138.43" y2="85.09" width="0.1524" layer="91"/>
@@ -2232,6 +2258,11 @@ OUT</text>
 <segment>
 <pinref part="U2" gate="G$1" pin="ON"/>
 <pinref part="SUPPLY4" gate="G$1" pin="VCC"/>
+</segment>
+<segment>
+<pinref part="SUPPLY9" gate="G$1" pin="VCC"/>
+<pinref part="D2" gate="G$1" pin="+"/>
+<wire x1="15.24" y1="130.81" x2="15.24" y2="132.08" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="VRPI" class="0">
@@ -2365,6 +2396,28 @@ OUT</text>
 <pinref part="U2" gate="G$1" pin="OFF"/>
 <pinref part="S2" gate="G$1" pin="1"/>
 <wire x1="125.73" y1="82.55" x2="123.19" y2="82.55" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="V_DIODE" class="0">
+<segment>
+<pinref part="D2" gate="G$1" pin="-"/>
+<wire x1="15.24" y1="123.19" x2="15.24" y2="119.38" width="0.1524" layer="91"/>
+<label x="15.24" y="119.38" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="U1" gate="G$1" pin="VCC"/>
+<wire x1="17.78" y1="66.04" x2="25.4" y2="66.04" width="0.1524" layer="91"/>
+<label x="13.97" y="67.31" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="U$1" gate="G$1" pin="VCC"/>
+<wire x1="19.05" y1="102.87" x2="19.05" y2="99.06" width="0.1524" layer="91"/>
+<label x="19.05" y="104.14" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="J2" gate="G$1" pin="P$1"/>
+<wire x1="17.78" y1="48.26" x2="17.78" y2="41.91" width="0.1524" layer="91"/>
+<label x="17.78" y="44.45" size="1.778" layer="95"/>
 </segment>
 </net>
 </nets>
