@@ -487,9 +487,9 @@ You are welcome to use this library for commercial purposes. For attribution, we
 <wire x1="-4.445" y1="-3.81" x2="4.445" y2="-3.81" width="0.2032" layer="21"/>
 <wire x1="4.445" y1="-3.81" x2="4.445" y2="3.175" width="0.2032" layer="21"/>
 <pad name="2" x="0" y="2.6446" drill="1.0414" diameter="1.4732"/>
-<pad name="5" x="0" y="-2.6446" drill="1.0414" diameter="1.4732"/>
-<pad name="6" x="2.2606" y="-2.6446" drill="1.0414" diameter="1.4732"/>
-<pad name="4" x="-2.2606" y="-2.6446" drill="1.0414" diameter="1.4732"/>
+<pad name="5" x="0" y="-2.8986" drill="1.0414" diameter="1.4732"/>
+<pad name="6" x="2.2606" y="-2.8986" drill="1.0414" diameter="1.4732"/>
+<pad name="4" x="-2.2606" y="-2.8986" drill="1.0414" diameter="1.4732"/>
 <pad name="1" x="-2.2606" y="2.6446" drill="1.0414" diameter="1.4732"/>
 <pad name="3" x="2.2606" y="2.6446" drill="1.0414" diameter="1.4732"/>
 <text x="-3.81" y="3.81" size="0.4064" layer="25">&gt;NAME</text>
