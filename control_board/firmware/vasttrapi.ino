@@ -29,7 +29,7 @@ const unsigned short rpiPwrPin = PB3;
 const boolean powerOnState = HIGH; // The rpiPwrPin state that turns the power on to the RPi
 
 volatile unsigned long timeToSleep = 0;
-const unsigned long awakePeriod = 600000; // Time in milliseconds to remain awake on every new touch
+const unsigned long awakePeriod = 600000UL; // Time in milliseconds to remain awake on every new touch
 const unsigned long shutdownTime = 12000; // Time in milliseconds to wait for the RPi to shutdown
 
 enum PowerState {
