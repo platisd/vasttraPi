@@ -41,7 +41,8 @@ LINDHOLMEN_ID = "9021014004490000"
 TEKNIKGATAN_ID = "9021014006675000"
 stations = {"Lindholmen": LINDHOLMEN_ID, "Teknikgatan": TEKNIKGATAN_ID}
 destinations = {"16": "Marklandsgatan", "99": "Hj. Bratningsplatsen", "45": "Backebol",
-                "55": "Johanneberg", "16X": "Centralstationen", "121": "Partille"}
+                "55": "Johanneberg", "16X": "Centralstationen", "121": "Partille",
+                "58": "Bergsjon"}
 sideColumnMinSize = 100
 departureFontSize = 40
 destinationFontSize = int(departureFontSize / 2) if onPi else departureFontSize
