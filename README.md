@@ -1,5 +1,7 @@
 # VasttraPi
-Your personal departures screen for Västtrafik buses. Currently it is hardcoded to look for buses going from Lindholmen to the center, but can be easily modified or extended. It uses a Python wrapper ([PyTrafik](https://github.com/axelniklasson/PyTrafik)), around the Västtrafik API by Axel Niklasson.
+Your personal departures screen for Västtrafik buses. Currently it is hardcoded to look for buses going from Lindholmen to the center, but can be easily modified or extended. It uses a Python wrapper ([PyTrafik](https://github.com/axelniklasson/PyTrafik)), around the Västtrafik API by Axel Niklasson. Read more about the project and its background [here](https://platis.solutions/blog/2017/06/18/vasttrapi-my-personalized-vasttrafik-bus-stop/).
+
+![vasttrapi photo](https://platis.solutions/blog/wp-content/uploads/2017/06/vasttrapi_featured2.jpg)
 
 ## How to install
 First, prepare your Raspberry Pi for connecting with your local wireless network and enable SSH. The following guide has been tested on **2017-03-02-raspbian-jessie** running on a **Raspberry Pi Zero W**.
