@@ -40,9 +40,6 @@ mainThread = threading.current_thread()
 LINDHOLMEN_ID = "9021014004490000"
 TEKNIKGATAN_ID = "9021014006675000"
 stations = {"Lindholmen": LINDHOLMEN_ID, "Teknikgatan": TEKNIKGATAN_ID}
-destinations = {"16": "Marklandsgatan", "99": "Hj. Bratningsplatsen", "45": "Backebol",
-                "55": "Johanneberg", "16X": "Centralstationen", "121": "Partille",
-                "58": "Bergsjon"}
 sideColumnMinSize = 100
 departureFontSize = 40
 destinationFontSize = int(departureFontSize / 2) if onPi else departureFontSize
@@ -134,13 +131,13 @@ def getNextTrips():
                 try:
                     # Sometimes rtTime is not returned, so fall back to normal time instead
                     departureTime = departure['rtTime'] if 'rtTime' in departure else departure['time']
-                    trips[departure['sname']].append(departureTime)
+                    trips[(departure['sname'], departure['direction'])].append(departureTime)
                     #print ("Bus %s leaves towards %s at %s" % (departure['sname'], departure['direction'], departure['rtTime']))
                 except Exception as e:
                     print ("Error while parsing server response")
     #print (sorted(trips.items()))
     nextTrips = []
-    for busLine, departureTimes in trips.items():
+    for (busLine, destination), departureTimes in trips.items():
             remainingDepartures = 2  # The number of departures that we care to show
             for departureTime in departureTimes:
                 remainingDepartures -= 1
@@ -153,7 +150,7 @@ def getNextTrips():
                     MINUTES_IN_DAY = 1440
                     minutesToLeave += MINUTES_IN_DAY
                 #print ("Bus %s, leaves in %d" % (busLine, minutesToLeave))
-                nextTrips.append((busLine, minutesToLeave))
+                nextTrips.append((busLine, destination, minutesToLeave))
     return nextTrips
 
 
@@ -212,7 +209,7 @@ class GUI:
     def populateTable(self, departures):
         currentRow = 0
         for departure in departures:
-            (bus, minutes) = departure
+            (bus, destination, minutes) = departure
             # If a departure is too far in the future, don't display it
             if minutes > maxFutureDepartureTime:
                 continue
@@ -227,7 +224,7 @@ class GUI:
 
             # After we have created the frame that will hold each departure, create the labels
             busNo = tk.Label(rowFrame, text=bus, font=("Helvetica", departureFontSize), bg=bgColor)
-            busDest = tk.Label(rowFrame, text=destinations.get(bus, bus), font=("Helvetica", destinationFontSize), bg=bgColor)
+            busDest = tk.Label(rowFrame, text=destination, font=("Helvetica", destinationFontSize), bg=bgColor)
             minsLeft = tk.Label(rowFrame, text=int(minutes) if int(minutes) != 0 else "Now", font=("Helvetica", departureFontSize), bg=bgColor)
             busNo.grid(row=0, column=0)
             busDest.grid(row=0, column=1)
@@ -253,8 +250,8 @@ class GUI:
 def updateGui(gui):
     # Get the next trips from Vasttrafik's public API for the station we are interested in
     nextTrips = getNextTrips()  # Contains a list of tuples (bus, minutesToDepart)
-    # Sort the trips based on departure time (i.e. the second element in the tuples)
-    nextTrips.sort(key=lambda trips: trips[1])
+    # Sort the trips based on departure time (i.e. the third element in the tuples)
+    nextTrips.sort(key=lambda trips: trips[2])
     # Update the displayed departures if they are different to the ones currently displayed
     if nextTrips != gui.currentlyDisplayedDepartures:
         gui.resetDepartures()  # Remove any already existing departures
