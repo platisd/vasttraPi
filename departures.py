@@ -214,7 +214,7 @@ class GUI:
             if minutes > maxFutureDepartureTime:
                 continue
             # Change background color for each row
-            bgColor = "gray" if currentRow % 2 else "white"
+            bgColor = "#FFF289" if currentRow % 2 else "white"
 
             # The frame that will contain each departure
             rowFrame = tk.Frame(self.departuresFrame)
